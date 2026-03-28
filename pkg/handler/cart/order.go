@@ -1,5 +1,6 @@
 package cart
 
+
 import (
 	"context"
 	"github.com/gin-gonic/gin"
@@ -7,6 +8,10 @@ import (
 	"strconv"
 	"time"
 )
+
+type PlaceOrderRequest struct{
+	Address string `json:"address" validate:"required"`
+}
 
 func (s *CartHandler) PlaceNewOrder(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
@@ -18,12 +23,16 @@ func (s *CartHandler) PlaceNewOrder(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// Place a new order.
-	newOrder, err := s.service.PlaceOrder(ctx, cartInfo.CartID, userID)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	// Bind Request
+	var req PlaceOrderRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
+	// Place a new Order.
+
+	newOrder, err := s.service.PlaceOrder(ctx, cartInfo.CartID, userID, req.Address)
+
 	// Remove all items from the cart after placing order.
 	err = s.service.RemoveItemsFromCart(ctx, cartInfo.CartID)
 	if err != nil {

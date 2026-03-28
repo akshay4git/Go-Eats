@@ -38,4 +38,5 @@ func NewUserHandler(
 func (s *UserHandler) registerValidator() {
 	_ = s.validate.RegisterValidation("name", userModel.NameValidator)
 	_ = s.validate.RegisterValidation("email", userModel.EmailValidator)
+	_ = s.validate.RegisterValidation("password", userModel.PasswordValidator)
 }
