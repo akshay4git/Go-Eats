@@ -2,19 +2,29 @@ package delivery
 
 import (
 	"context"
-	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
+	"github.com/gin-gonic/gin"
 )
 
+// @Summary     Register a delivery person
+// @Description Registers a new delivery person and generates their TOTP 2FA secret
+// @Tags        Delivery
+// @Accept      json
+// @Produce     json
+// @Param       deliveryPerson body delivery.DeliveryPersonParams true "Delivery person details"
+// @Success     201 {object} map[string]string
+// @Failure     400 {object} map[string]string
+// @Failure     500 {object} map[string]string
+// @Router      /delivery/add [post]
 func (s *DeliveryHandler) addDeliveryPerson(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
 	var deliverPerson delivery.DeliveryPersonParams
 	var deliverPersonModel delivery.DeliveryPerson
-
 	if err := c.BindJSON(&deliverPerson); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
@@ -30,6 +40,7 @@ func (s *DeliveryHandler) addDeliveryPerson(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	deliverPersonModel.AuthKey = authKey
 	deliverPersonModel.AuthKeyURL = authKeyURL
 	deliverPersonModel.IsAuthSet = false
@@ -39,7 +50,5 @@ func (s *DeliveryHandler) addDeliveryPerson(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusCreated, gin.H{"message": "Delivery Person Added Successfully!"})
-
 }

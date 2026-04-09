@@ -2,16 +2,31 @@ package restaurant
 
 import (
 	"context"
-	restaurantModel "github.com/Ayocodes24/GO-Eats/pkg/database/models/restaurant"
-	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	restaurantModel "github.com/Ayocodes24/GO-Eats/pkg/database/models/restaurant"
+	"github.com/gin-gonic/gin"
 )
 
+// @Summary     Add a restaurant
+// @Description Creates a new restaurant with photo upload (multipart/form-data)
+// @Tags        Restaurant
+// @Accept      mpfd
+// @Produce     json
+// @Param       file        formData file   true  "Restaurant photo"
+// @Param       name        formData string true  "Restaurant name"
+// @Param       description formData string true  "Description"
+// @Param       address     formData string true  "Address"
+// @Param       city        formData string true  "City"
+// @Param       state       formData string true  "State"
+// @Success     201 {object} map[string]string
+// @Failure     400 {object} map[string]string
+// @Router      /restaurant/ [post]
 func (s *RestaurantHandler) addRestaurant(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -24,10 +39,7 @@ func (s *RestaurantHandler) addRestaurant(c *gin.Context) {
 	}
 
 	originalFileName := fileHeader.Filename
-
-	// Generate a new file name
 	newFileName := generateFileName(originalFileName)
-
 	_, err = s.Serve.Storage.Upload(newFileName, file)
 	if err != nil {
 		slog.Error("Error", "addRestaurant", err.Error())
@@ -51,6 +63,13 @@ func (s *RestaurantHandler) addRestaurant(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Restaurant created successfully"})
 }
 
+// @Summary     List all restaurants
+// @Description Returns a list of all restaurants
+// @Tags        Restaurant
+// @Produce     json
+// @Success     200 {array}  object
+// @Failure     404 {object} map[string]string
+// @Router      /restaurant/ [get]
 func (s *RestaurantHandler) listRestaurants(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -67,9 +86,18 @@ func (s *RestaurantHandler) listRestaurants(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
+// @Summary     Get restaurant by ID
+// @Description Returns a single restaurant by its ID
+// @Tags        Restaurant
+// @Produce     json
+// @Param       id path int true "Restaurant ID"
+// @Success     200 {array} object
+// @Failure     404 {object} map[string]string
+// @Router      /restaurant/{id} [get]
 func (s *RestaurantHandler) listRestaurantById(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
+
 	restaurantId := c.Param("id")
 	restaurantID, _ := strconv.ParseInt(restaurantId, 10, 64)
 
@@ -81,13 +109,19 @@ func (s *RestaurantHandler) listRestaurantById(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// @Summary     Delete a restaurant
+// @Description Deletes a restaurant by ID
+// @Tags        Restaurant
+// @Produce     json
+// @Param       id path int true "Restaurant ID"
+// @Success     204
+// @Failure     404 {object} map[string]string
+// @Router      /restaurant/{id} [delete]
 func (s *RestaurantHandler) deleteRestaurant(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
 	restaurantId := c.Param("id")
-
-	// Convert to integer
 	restaurantID, _ := strconv.ParseInt(restaurantId, 10, 64)
 
 	_, err := s.service.DeleteRestaurant(ctx, restaurantID)
@@ -95,7 +129,5 @@ func (s *RestaurantHandler) deleteRestaurant(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.Status(http.StatusNoContent)
-
 }

@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// @name DeliveryPerson
 type DeliveryPerson struct {
 	bun.BaseModel    `bun:"table:delivery_person"`
 	DeliveryPersonID int64  `bun:",pk,autoincrement" json:"delivery_person_id"`
@@ -32,17 +33,20 @@ type Deliveries struct {
 	utils.Timestamp
 }
 
+// @name DeliveryPersonParams
 type DeliveryPersonParams struct {
 	Name           string `json:"name"`
 	Phone          string `json:"phone"`
 	VehicleDetails string `json:"vehicle_details"`
 }
 
+// @name DeliveryParams
 type DeliveryLoginParams struct {
 	Phone string `json:"phone"`
 	OTP   string `json:"otp"`
 }
 
+// @name DeliveryOrderPlacementParams
 type DeliveryOrderPlacementParams struct {
 	OrderID int64  `json:"order_id"`
 	Status  string `json:"status"`

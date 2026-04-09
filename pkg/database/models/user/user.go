@@ -10,6 +10,7 @@ import (
 	"unicode"
 )
 
+// @name User
 type User struct {
 	bun.BaseModel `bun:"table:users"`
 	ID            int64  `bun:",pk,autoincrement" json:"id"`
@@ -18,6 +19,7 @@ type User struct {
 	Password      string `bun:",notnull" json:"password" validate:"password"`
 }
 
+// @LoginUser
 type LoginUser struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

@@ -9,6 +9,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
+// @name Review
 type Review struct {
 	bun.BaseModel `bun:"table:reviews"`
 
@@ -23,6 +24,7 @@ type Review struct {
 	Restaurant *restaurant.Restaurant `bun:"rel:belongs-to,join:restaurant_id=restaurant_id" json:"-"`
 }
 
+// @name ReviewParams
 type ReviewParams struct {
 	Rating  int    `json:"rating" validate:"rating"`
 	Comment string `json:"comment"`

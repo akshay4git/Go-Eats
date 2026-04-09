@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"strings"
+	"time"
 )
 
 type NATS struct {
@@ -13,11 +14,21 @@ type NATS struct {
 }
 
 func NewNATS(url string) (*NATS, error) {
-	nc, err := nats.Connect(url, nats.Name("food-delivery-nats"))
-	if err != nil {
-		log.Fatalf("Error connecting to NATS:: %s", err)
+	var nc *nats.Conn
+	var err error
+
+	for i := 0; i < 5; i++ {
+		nc, err = nats.Connect(url, nats.Name("food-delivery-nats"))
+		if err == nil {
+			return &NATS{Conn: nc}, nil
+		}
+
+		log.Println("Retrying NATS connection...", i+1)
+		time.Sleep(2 * time.Second)
 	}
-	return &NATS{Conn: nc}, err
+
+	log.Fatalf("Error connecting to NATS:: %s", err)
+	return nil, err
 }
 
 func (n *NATS) Pub(topic string, message []byte) error {

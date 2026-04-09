@@ -5,6 +5,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
+// @name Restaurant
 type Restaurant struct {
 	bun.BaseModel `bun:"table:restaurant"`
 	RestaurantID  int64  `bun:",pk,autoincrement" json:"restaurant_id"`
@@ -18,6 +19,7 @@ type Restaurant struct {
 	MenuItems []MenuItem `bun:"rel:has-many,join:restaurant_id=menu_id" json:"-"`
 }
 
+// @name MenuItem
 type MenuItem struct {
 	bun.BaseModel `bun:"table:menu_item"`
 	MenuID        int64   `bun:",pk,autoincrement" json:"menu_id"`

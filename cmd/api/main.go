@@ -1,6 +1,9 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/Ayocodes24/GO-Eats/cmd/api/middleware"
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
 	"github.com/Ayocodes24/GO-Eats/pkg/handler"
@@ -21,30 +24,75 @@ import (
 	usr "github.com/Ayocodes24/GO-Eats/pkg/service/user"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
-	"log"
-	"os"
+	_ "github.com/Ayocodes24/GO-Eats/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func main() {
-	err := godotenv.Load()
+func runMigrations() {
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		// Build from individual env vars (local dev)
+		databaseURL = "postgres://" + os.Getenv("DB_USERNAME") + ":" + os.Getenv("DB_PASSWORD") +
+			"@" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("DB_NAME") + "?sslmode=disable"
+	}
+
+	m, err := migrate.New("file://migrations", databaseURL)
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("Migration init error: %s", err)
+	}
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("Migration failed: %s", err)
+	}
+	log.Println("Migrations applied successfully")
+}
+
+// @title 			GO-EATS API
+// @version			1.0
+// @description 	A food delivery backend system with user management, restaurant operations, cart/order processing, delivery management with 2FA and real-time notifications.
+// @contact.name 	Akshay Sharma
+// @contact.url     github.com/akshay4git/Go-Eats
+
+// @host 			localhost:8080
+// @BasePath 		/
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and your JWT token
+
+
+func main() {
+	// Load .env for local dev — on Railway env vars are injected directly
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
 	}
 
 	env := os.Getenv("APP_ENV")
+
+	// Run migrations before anything else
+	runMigrations()
+
 	db := database.New()
-	// Create Tables
-	if err := db.Migrate(); err != nil {
-		log.Fatalf("Error migrating database: %s", err)
-	}
 
 	// Initialize Validator
 	validate := validator.New()
 
 	// Connect NATS
-	natServer, err := nats.NewNATS("nats://127.0.0.1:4222")
+	natsURL := os.Getenv("NATS_URL")
+	if natsURL == "" {
+		natsURL = "nats://127.0.0.1:4222" //fallback for lacal dev
+	}
+
+	natServer, err := nats.NewNATS(natsURL)
+	if err != nil {
+		log.Fatalf("failed to connect to NATS: %v", err)
+	}
 
 	// WebSocket Clients
 	wsClients := make(map[string]*websocket.Conn)
@@ -80,17 +128,14 @@ func main() {
 
 	// Notification
 	notifyService := notification.NewNotificationService(db, env, natServer)
-
-	// Subscribe to multiple events.
 	_ = notifyService.SubscribeNewOrders(wsClients)
 	_ = notifyService.SubscribeOrderStatus(wsClients)
-
 	notify.NewNotifyHandler(s, "/notify", notifyService, middlewares, validate, wsClients)
 
 	s.Gin.GET("/healthz", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
+	s.Gin.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	log.Fatal(s.Run())
-
 }

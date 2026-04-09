@@ -2,13 +2,26 @@ package review
 
 import (
 	"context"
-	reviewModel "github.com/Ayocodes24/GO-Eats/pkg/database/models/review"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 	"time"
+
+	reviewModel "github.com/Ayocodes24/GO-Eats/pkg/database/models/review"
+	"github.com/gin-gonic/gin"
 )
 
+// @Summary     Add a review
+// @Description Adds a review for a restaurant by the authenticated user
+// @Tags        Reviews
+// @Accept      json
+// @Produce     json
+// @Param       restaurant_id path int                  true "Restaurant ID"
+// @Param       review body review.ReviewParams true "Review details"
+// @Success     201 {object} map[string]string
+// @Failure     400 {object} map[string]string
+// @Failure     500 {object} map[string]string
+// @Security    BearerAuth
+// @Router      /review/{restaurant_id} [post]
 func (s *ReviewProtectedHandler) addReview(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -26,27 +39,33 @@ func (s *ReviewProtectedHandler) addReview(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
-
 	if err := s.validate.Struct(reviewParam); err != nil {
 		validationError := reviewModel.ReviewValidationError(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": validationError})
 		return
 	}
 
-	comment := reviewParam.Comment
-	rating := reviewParam.Rating
 	review.UserID = userID
 	review.RestaurantID = restaurantId
-	review.Rating = rating
-	review.Comment = comment
+	review.Rating = reviewParam.Rating
+	review.Comment = reviewParam.Comment
+
 	_, err = s.service.Add(ctx, &review)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "Review Added!"})
-
 }
 
+// @Summary     List reviews
+// @Description Returns all reviews for a specific restaurant
+// @Tags        Reviews
+// @Produce     json
+// @Param       restaurant_id path int true "Restaurant ID"
+// @Success     200 {array}  object
+// @Failure     404 {object} map[string]string
+// @Security    BearerAuth
+// @Router      /review/{restaurant_id} [get]
 func (s *ReviewProtectedHandler) listReviews(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -56,7 +75,6 @@ func (s *ReviewProtectedHandler) listReviews(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Invalid RestaurantID"})
 		return
 	}
-
 	results, err := s.service.ListReviews(ctx, restaurantId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -69,14 +87,21 @@ func (s *ReviewProtectedHandler) listReviews(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
+// @Summary     Delete a review
+// @Description Deletes a review by ID for the authenticated user
+// @Tags        Reviews
+// @Produce     json
+// @Param       review_id path int true "Review ID"
+// @Success     204
+// @Failure     404 {object} map[string]string
+// @Security    BearerAuth
+// @Router      /review/{review_id} [delete]
 func (s *ReviewProtectedHandler) deleteReview(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
 	reviewId := c.Param("review_id")
 	userID := c.GetInt64("userID")
-
-	// Convert to integer
 	reviewID, _ := strconv.ParseInt(reviewId, 10, 64)
 
 	_, err := s.service.DeleteReview(ctx, reviewID, userID)
@@ -84,7 +109,5 @@ func (s *ReviewProtectedHandler) deleteReview(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.Status(http.StatusNoContent)
-
 }

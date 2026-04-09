@@ -2,18 +2,28 @@ package delivery
 
 import (
 	"context"
-	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
+	"github.com/gin-gonic/gin"
 )
 
+// @Summary     Delivery person login
+// @Description Authenticates a delivery person using phone number and TOTP OTP, returns JWT
+// @Tags        Delivery
+// @Accept      json
+// @Produce     json
+// @Param       credentials body delivery.DeliveryLoginParams true "Phone and OTP"
+// @Success     201 {object} map[string]string
+// @Failure     400 {object} map[string]string
+// @Router      /delivery/login [post]
 func (s *DeliveryHandler) loginDelivery(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
+
 	var token string
 	var deliverLoginPerson delivery.DeliveryLoginParams
-
 	if err := c.BindJSON(&deliverLoginPerson); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
@@ -34,8 +44,6 @@ func (s *DeliveryHandler) loginDelivery(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Unable to generate login information. Please contact administrator."})
 			return
 		}
-
 	}
-
 	c.JSON(http.StatusCreated, gin.H{"token": token})
 }

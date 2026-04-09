@@ -7,6 +7,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
+// @name Cart
 type Cart struct {
 	bun.BaseModel `bun:"table:cart"`
 	CartID        int64 `bun:",pk,autoincrement" json:"cart_id"`
@@ -14,7 +15,7 @@ type Cart struct {
 	utils.Timestamp
 	User *userModel.User `bun:"rel:belongs-to,join:user_id=id" json:"-"`
 }
-
+// @name CartItems
 type CartItems struct {
 	bun.BaseModel `bun:"table:cart_items"`
 	CartItemID    int64 `bun:",pk,autoincrement" json:"cart_item_id"`
@@ -28,6 +29,8 @@ type CartItems struct {
 	Cart       *Cart                  `bun:"rel:belongs-to,join:cart_id=cart_id" json:"-"`
 }
 
+// CartItemsParams represents an item added to card
+// @name CartItemParams
 type CartItemParams struct {
 	CartID       int64 `json:"cart_id"`
 	ItemID       int64 `json:"item_id"`

@@ -5,12 +5,40 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: yourpassword
-      POSTGRES_DB: food_delivery
+      POSTGRES_PASSWORD: Ay@240104
+      POSTGRES_DB: food-delivery
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  nats:
+    image: nats:latest
+    container_name: go-eats-nats
+    restart: unless-stopped
+    ports:
+      - "4222:4222"
+
+  app:
+    build: .
+    container_name: go-eats-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - nats
+    environment:
+      DB_HOST: db
+      DB_USERNAME: postgres
+      DB_PASSWORD: Ay@240104
+      DB_NAME: food-delivery
+      DB_PORT: 5432
+      NATS_URL: nats://nats:4222
+      STORAGE_TYPE: local
+      LOCAL_STORAGE_PATH: /app/uploads
+    volumes:
+      - ./uploads:/app/uploads:Z 
 
 volumes:
   pgdata:

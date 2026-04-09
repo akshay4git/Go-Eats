@@ -1,0 +1,819 @@
+basePath: /
+definitions:
+  cart.CartItemParams:
+    properties:
+      cart_id:
+        type: integer
+      item_id:
+        type: integer
+      quantity:
+        type: integer
+      restaurant_id:
+        type: integer
+    type: object
+  cart.PlaceOrderRequest:
+    properties:
+      address:
+        type: string
+    required:
+    - address
+    type: object
+  delivery.DeliveryLoginParams:
+    properties:
+      otp:
+        type: string
+      phone:
+        type: string
+    type: object
+  delivery.DeliveryOrderPlacementParams:
+    properties:
+      order_id:
+        type: integer
+      status:
+        type: string
+    type: object
+  delivery.DeliveryPersonParams:
+    properties:
+      name:
+        type: string
+      phone:
+        type: string
+      vehicle_details:
+        type: string
+    type: object
+  review.ReviewParams:
+    properties:
+      comment:
+        type: string
+      rating:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Akshay Sharma
+    url: github.com/akshay4git/Go-Eats
+  description: A food delivery backend system with user management, restaurant operations,
+    cart/order processing, delivery management with 2FA and real-time notifications.
+  title: GO-EATS API
+  version: "1.0"
+paths:
+  /cart/add:
+    post:
+      consumes:
+      - application/json
+      description: Adds a menu item to the authenticated user's cart
+      parameters:
+      - description: Cart item details
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/cart.CartItemParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add item to cart
+      tags:
+      - Cart
+  /cart/list:
+    get:
+      description: Returns all items in the authenticated user's cart
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List cart items
+      tags:
+      - Cart
+  /cart/order/new:
+    post:
+      consumes:
+      - application/json
+      description: Places a new order from the authenticated user's cart
+      parameters:
+      - description: Delivery address
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/cart.PlaceOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Place a new order
+      tags:
+      - Orders
+  /cart/orders:
+    get:
+      description: Returns all orders for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List orders
+      tags:
+      - Orders
+  /cart/orders/{id}:
+    get:
+      description: Returns all items for a specific order
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List order items
+      tags:
+      - Orders
+  /cart/orders/deliveries/{id}:
+    get:
+      description: Returns delivery information for a specific order
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get delivery info for an order
+      tags:
+      - Orders
+  /cart/remove/{id}:
+    delete:
+      description: Removes a specific item from the cart by cart item ID
+      parameters:
+      - description: Cart Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove item from cart
+      tags:
+      - Cart
+  /delivery/add:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new delivery person and generates their TOTP 2FA secret
+      parameters:
+      - description: Delivery person details
+        in: body
+        name: deliveryPerson
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.DeliveryPersonParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a delivery person
+      tags:
+      - Delivery
+  /delivery/deliveries/{order_id}:
+    get:
+      description: Returns all delivery records for a specific order
+      parameters:
+      - description: Order ID
+        in: path
+        name: order_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List deliveries for an order
+      tags:
+      - Delivery
+  /delivery/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a delivery person using phone number and TOTP OTP,
+        returns JWT
+      parameters:
+      - description: Phone and OTP
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.DeliveryLoginParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delivery person login
+      tags:
+      - Delivery
+  /delivery/update-order:
+    post:
+      consumes:
+      - application/json
+      description: Delivery person updates an order's delivery status
+      parameters:
+      - description: Order ID and new status
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.DeliveryOrderPlacementParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update order status
+      tags:
+      - Delivery
+  /restaurant/:
+    get:
+      description: Returns a list of all restaurants
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: object
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all restaurants
+      tags:
+      - Restaurant
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new restaurant with photo upload (multipart/form-data)
+      parameters:
+      - description: Restaurant photo
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Restaurant name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Description
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Address
+        in: formData
+        name: address
+        required: true
+        type: string
+      - description: City
+        in: formData
+        name: city
+        required: true
+        type: string
+      - description: State
+        in: formData
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a restaurant
+      tags:
+      - Restaurant
+  /restaurant/{id}:
+    delete:
+      description: Deletes a restaurant by ID
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a restaurant
+      tags:
+      - Restaurant
+    get:
+      description: Returns a single restaurant by its ID
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: object
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get restaurant by ID
+      tags:
+      - Restaurant
+  /restaurant/menu:
+    get:
+      description: Returns all menu items, or filtered by restaurant_id if provided
+      parameters:
+      - description: Restaurant ID (optional)
+        in: query
+        name: restaurant_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: object
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List menu items
+      tags:
+      - Restaurant
+    post:
+      consumes:
+      - application/json
+      description: Adds a new menu item to a restaurant
+      parameters:
+      - description: Menu item details
+        in: body
+        name: menuItem
+        required: true
+        schema:
+          properties:
+            available:
+              type: boolean
+            category:
+              type: string
+            description:
+              type: string
+            name:
+              type: string
+            price:
+              type: number
+            restaurant_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a menu item
+      tags:
+      - Restaurant
+  /restaurant/menu/{restaurant_id}/{menu_id}:
+    delete:
+      description: Deletes a menu item by restaurant ID and menu ID
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: restaurant_id
+        required: true
+        type: integer
+      - description: Menu ID
+        in: path
+        name: menu_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a menu item
+      tags:
+      - Restaurant
+  /review/{restaurant_id}:
+    get:
+      description: Returns all reviews for a specific restaurant
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: restaurant_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: object
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List reviews
+      tags:
+      - Reviews
+    post:
+      consumes:
+      - application/json
+      description: Adds a review for a restaurant by the authenticated user
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: restaurant_id
+        required: true
+        type: integer
+      - description: Review details
+        in: body
+        name: review
+        required: true
+        schema:
+          $ref: '#/definitions/review.ReviewParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add a review
+      tags:
+      - Reviews
+  /review/{review_id}:
+    delete:
+      description: Deletes a review by ID for the authenticated user
+      parameters:
+      - description: Review ID
+        in: path
+        name: review_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a review
+      tags:
+      - Reviews
+  /user/:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account
+      parameters:
+      - description: User registration details
+        in: body
+        name: user
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            name:
+              type: string
+            password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - User
+  /user/{id}:
+    delete:
+      description: Deletes a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a user
+      tags:
+      - User
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login
+      tags:
+      - User
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and your JWT token
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

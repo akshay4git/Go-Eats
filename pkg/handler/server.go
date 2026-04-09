@@ -1,6 +1,10 @@
 package handler
 
 import (
+	"log/slog"
+	"os"
+	"time"
+
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
 	"github.com/Ayocodes24/GO-Eats/pkg/storage"
 	"github.com/gin-contrib/cors"
@@ -9,9 +13,6 @@ import (
 	"github.com/ulule/limiter/v3"
 	ginlimiter "github.com/ulule/limiter/v3/drivers/middleware/gin"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
-	"log/slog"
-	"os"
-	"time"
 )
 
 type Server struct {
@@ -51,7 +52,7 @@ func NewServer(db database.Database, setLog bool) *Server {
 
 	localStoragePath := os.Getenv("LOCAL_STORAGE_PATH")
 	if len(localStoragePath) > 0 {
-		ginEngine.Static(os.Getenv("STORAGE_DIRECTORY"), localStoragePath)
+		ginEngine.Static("/uploads", localStoragePath)
 	}
 
 	return &Server{
