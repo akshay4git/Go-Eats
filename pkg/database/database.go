@@ -171,27 +171,28 @@ func (d *DB) Close() error {
 }
 
 func New() Database {
-	dbHost := os.Getenv("DB_HOST")
-	dbUsername := os.Getenv("DB_USERNAME")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbPort := os.Getenv("DB_PORT")
-	databasePort, err := strconv.Atoi(dbPort)
-	if err != nil {
-		log.Fatal("Invalid DB Port")
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		// fallback for local dev
+		dbHost := os.Getenv("DB_HOST")
+		dbUsername := os.Getenv("DB_USERNAME")
+		dbPassword := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbPort := os.Getenv("DB_PORT")
+		databasePort, err := strconv.Atoi(dbPort)
+		if err != nil {
+			log.Fatal("Invalid DB Port")
+		}
+		dsn = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", dbUsername, dbPassword, dbHost, databasePort, dbName)
 	}
 
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", dbUsername, dbPassword, dbHost, databasePort, dbName)
 	database := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
-
-	// Connection Pool configuration
 	database.SetMaxOpenConns(25)
 	database.SetMaxIdleConns(5)
 	database.SetConnMaxLifetime(5 * time.Minute)
 
 	db := bun.NewDB(database, pgdialect.New())
 	return &DB{db: db}
-
 }
 
 // NewTestDB creates a new in-memory test database.
