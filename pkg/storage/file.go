@@ -12,7 +12,11 @@ type ImageStorage interface {
 func CreateImageStorage(storageType string) ImageStorage {
 	switch storageType {
 	case "local":
-		localFileStore := &LocalFileStorage{BasePath: os.Getenv("LOCAL_STORAGE_PATH")}
+		basePath := os.Getenv("LOCAL_STORAGE_PATH")
+		if basePath == "" {
+			basePath = "/app/uploads"
+		}
+		localFileStore := &LocalFileStorage{BasePath: basePath}
 		createUploadDirectory(localFileStore.BasePath)
 		return localFileStore
 	default:
