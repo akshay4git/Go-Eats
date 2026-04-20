@@ -58,7 +58,8 @@ func runMigrations() {
 // @contact.name 	Akshay Sharma
 // @contact.url     github.com/akshay4git/Go-Eats
 
-// @host 			localhost:8080
+// @host 			go-eats-production.up.railway.app
+// @Schemes			https
 // @BasePath 		/
 
 // @securityDefinitions.apikey BearerAuth
@@ -93,7 +94,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect to NATS: %v", err)
 	}
-
 	// WebSocket Clients
 	wsClients := make(map[string]*websocket.Conn)
 

@@ -1,4 +1,7 @@
 {
+    "schemes": [
+        "https"
+    ],
     "swagger": "2.0",
     "info": {
         "description": "A food delivery backend system with user management, restaurant operations, cart/order processing, delivery management with 2FA and real-time notifications.",
@@ -9,7 +12,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "go-eats-production.up.railway.app",
     "basePath": "/",
     "paths": {
         "/cart/add": {

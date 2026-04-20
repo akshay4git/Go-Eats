@@ -48,7 +48,7 @@ definitions:
       rating:
         type: integer
     type: object
-host: localhost:8080
+host: go-eats-production.up.railway.app
 info:
   contact:
     name: Akshay Sharma
@@ -810,6 +810,8 @@ paths:
       summary: Login
       tags:
       - User
+schemes:
+- https
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and your JWT token
