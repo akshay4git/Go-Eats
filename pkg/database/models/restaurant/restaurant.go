@@ -10,7 +10,7 @@ type Restaurant struct {
 	bun.BaseModel `bun:"table:restaurants"`
 	RestaurantID  int64  `bun:",pk,autoincrement" json:"restaurant_id"`
 	Name          string `bun:",notnull" json:"name"`
-	Photo         string `bun:"store_image,nullzero" json:"store_image"`
+	Photo         string `bun:"photo,nullzero" json:"Photo"`
 	Description   string `bun:",notnull" json:"description"`
 	Address       string `bun:"address,notnull" json:"address"`
 	City          string `bun:"city,notnull" json:"city"`
