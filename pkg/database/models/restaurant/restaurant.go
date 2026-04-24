@@ -7,7 +7,7 @@ import (
 
 // @name Restaurant
 type Restaurant struct {
-	bun.BaseModel `bun:"table:restaurant"`
+	bun.BaseModel `bun:"table:restaurants"`
 	RestaurantID  int64  `bun:",pk,autoincrement" json:"restaurant_id"`
 	Name          string `bun:",notnull" json:"name"`
 	Photo         string `bun:"store_image,nullzero" json:"store_image"`
@@ -21,7 +21,7 @@ type Restaurant struct {
 
 // @name MenuItem
 type MenuItem struct {
-	bun.BaseModel `bun:"table:menu_item"`
+	bun.BaseModel `bun:"table:menu_items"`
 	MenuID        int64   `bun:",pk,autoincrement" json:"menu_id"`
 	RestaurantID  int64   `bun:"restaurant_id,notnull" json:"restaurant_id"`
 	Name          string  `bun:"name,notnull" json:"name"`
