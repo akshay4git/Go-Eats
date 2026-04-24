@@ -49,7 +49,7 @@ func (restSrv *RestaurantService) UpdateMenuPhoto(ctx context.Context, menu *res
 			slog.Error("UnSplash Worker::", "error", ctx.Err().Error())
 			return
 		default:
-			_, err := restSrv.db.Update(context.Background(), "menu_item", setFilter, whereFilter)
+			_, err := restSrv.db.Update(context.Background(), "menu_items", setFilter, whereFilter)
 			if err != nil {
 				slog.Info("UnSplash DB Image Update", "error", err)
 			}

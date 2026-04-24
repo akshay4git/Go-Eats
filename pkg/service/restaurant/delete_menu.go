@@ -8,7 +8,7 @@ import (
 func (restSrv *RestaurantService) DeleteMenu(ctx context.Context, menuId int64, restaurantId int64) (bool, error) {
 	filter := database.Filter{"menu_id": menuId, "restaurant_id": restaurantId}
 
-	_, err := restSrv.db.Delete(ctx, "menu_item", filter)
+	_, err := restSrv.db.Delete(ctx, "menu_items", filter)
 	if err != nil {
 		return false, err
 	}

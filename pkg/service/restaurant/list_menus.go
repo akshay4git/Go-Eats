@@ -18,7 +18,7 @@ func (restSrv *RestaurantService) ListMenus(ctx context.Context, restaurantId in
 func (restSrv *RestaurantService) ListAllMenus(ctx context.Context) ([]restaurantModel.MenuItem, error) {
 	var menuItems []restaurantModel.MenuItem
 
-	err := restSrv.db.SelectAll(ctx, "menu_item", &menuItems)
+	err := restSrv.db.SelectAll(ctx, "menu_items", &menuItems)
 	if err != nil {
 		return nil, err
 	}
